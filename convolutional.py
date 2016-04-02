@@ -38,9 +38,8 @@ import tensorflow as tf
 ##########################
 import scipy.io as sp
 import matplotlib.pyplot as plot
+##########################
 
-SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
-WORK_DIRECTORY = 'data'
 #IMAGE_SIZE = 28
 NUM_CHANNELS = 1
 PIXEL_DEPTH = 255
@@ -48,7 +47,7 @@ PIXEL_DEPTH = 255
 #VALIDATION_SIZE = 5000  # Size of the validation set.
 SEED = 66478  # Set to None for random seed.
 #BATCH_SIZE = 64
-NUM_EPOCHS = 24
+#NUM_EPOCHS = 10
 #EVAL_BATCH_SIZE = 64
 EVAL_FREQUENCY = 100 # Number of steps between evaluations.
 
@@ -57,65 +56,11 @@ EVAL_FREQUENCY = 100 # Number of steps between evaluations.
 ############################
 IMAGE_SIZE = 32
 NUM_LABELS = 7
-VALIDATION_SIZE = 128
-BATCH_SIZE = 32
-EVAL_BATCH_SIZE = 32
-#NUM_EPOCHS = 5
-
-tf.app.flags.DEFINE_boolean("self_test", False, "True if running a self test.")
-FLAGS = tf.app.flags.FLAGS
-
-
-def maybe_download(filename):
-  """Download the data from Yann's website, unless it's already here."""
-  if not tf.gfile.Exists(WORK_DIRECTORY):
-    tf.gfile.MakeDirs(WORK_DIRECTORY)
-  filepath = os.path.join(WORK_DIRECTORY, filename)
-  if not tf.gfile.Exists(filepath):
-    filepath, _ = urllib.request.urlretrieve(SOURCE_URL + filename, filepath)
-    with tf.gfile.GFile(filepath) as f:
-      size = f.Size()
-    print('Successfully downloaded', filename, size, 'bytes.')
-  return filepath
-
-
-def extract_data(filename, num_images):
-  """Extract the images into a 4D tensor [image index, y, x, channels].
-
-  Values are rescaled from [0, 255] down to [-0.5, 0.5].
-  """
-  print('Extracting', filename)
-  with gzip.open(filename) as bytestream:
-    bytestream.read(16)
-    buf = bytestream.read(28 * 28 * num_images)
-    data = numpy.frombuffer(buf, dtype=numpy.uint8).astype(numpy.float32)
-    data = (data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
-    data = data.reshape(num_images, 28, 28, 1)
-    return data
-
-
-def extract_labels(filename, num_images):
-  """Extract the labels into a vector of int64 label IDs."""
-  print('Extracting', filename)
-  with gzip.open(filename) as bytestream:
-    bytestream.read(8)
-    buf = bytestream.read(1 * num_images)
-    labels = numpy.frombuffer(buf, dtype=numpy.uint8).astype(numpy.int64)
-  return labels
-
-
-def fake_data(num_images):
-  """Generate a fake dataset that matches the dimensions of MNIST."""
-  data = numpy.ndarray(
-      shape=(num_images, 28, 28, NUM_CHANNELS),
-      dtype=numpy.float32)
-  labels = numpy.zeros(shape=(num_images,), dtype=numpy.int64)
-  for image in xrange(num_images):
-    label = image % 2
-    data[image, :, :, 0] = label - 0.5
-    labels[image] = label
-  return data, labels
-
+VALIDATION_SIZE = 4
+BATCH_SIZE = 4
+EVAL_BATCH_SIZE = 4
+NUM_EPOCHS = 96
+############################
 
 def error_rate(predictions, labels, final):
   """Return the error rate based on dense predictions and sparse labels."""
@@ -132,78 +77,46 @@ def error_rate(predictions, labels, final):
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  if FLAGS.self_test:
-    print('Running self-test.')
-    train_data, train_labels = fake_data(256)
-    validation_data, validation_labels = fake_data(EVAL_BATCH_SIZE)
-    test_data, test_labels = fake_data(EVAL_BATCH_SIZE)
-    num_epochs = 1
-  else:
-    # Get the data.
-    #train_data_filename = maybe_download('train-images-idx3-ubyte.gz')
-    #train_labels_filename = maybe_download('train-labels-idx1-ubyte.gz')
-    #test_data_filename = maybe_download('t10k-images-idx3-ubyte.gz')
-    #test_labels_filename = maybe_download('t10k-labels-idx1-ubyte.gz')
+  ###########################################
+  # Get training data and test data for A3. #
+  ###########################################
+  labeled_images = sp.loadmat('labeled_images.mat')
+  public_test_images = sp.loadmat('public_test_images.mat')
 
-    # Extract it into numpy arrays.
-    #train_data2 = extract_data(train_data_filename, 60000)
-    #train_labels2 = extract_labels(train_labels_filename, 60000)
-    #test_data2 = extract_data(test_data_filename, 10000)
-    #test_labels2 = extract_labels(test_labels_filename, 10000)
+  # The images given by pixel matrices (32 pixels by 32 pixels by 2925 images).
+  train_data = labeled_images['tr_images'].astype(numpy.float32)
+  # Scale to between [-0.5, 0,5]. 
+  train_data = (train_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
+  train_data = numpy.transpose(train_data, (2, 0, 1))
+  train_data = train_data.reshape(train_data.shape[0], 32, 32, 1)
 
-    ###########################################
-    # Get training data and test data for A3. #
-    ###########################################
-    labeled_images = sp.loadmat('labeled_images.mat')
-    public_test_images = sp.loadmat('public_test_images.mat')
+  # The labels for each image.
+  train_labels = labeled_images['tr_labels'].astype(numpy.int64)
+  train_labels = train_labels.reshape(train_labels.shape[0]) - 1
 
-    # The images given by pixel matrices (32 pixels by 32 pixels by 2925 images).
-    train_data = labeled_images['tr_images'].astype(numpy.float32)
-    # Scale to between [-0.5, 0,5]. 
-    train_data = (train_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
-    train_data = numpy.transpose(train_data, (2, 0, 1))
-    #train_data = train_data[:, :, :, None]
-    train_data = train_data.reshape(train_data.shape[0], 32, 32, 1)
+  # The images given by pixel matrices (32 pixels by 32 pixels by 418 images).
+  test_data = public_test_images['public_test_images'].astype(numpy.float32)
+  # Scale to between [-0.5, 0,5]. 
+  test_data = (test_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
+  test_data = numpy.transpose(test_data, (2, 0, 1))
+  test_data = test_data.reshape(test_data.shape[0], 32, 32, 1)
 
-    # The labels for each image.
-    train_labels = labeled_images['tr_labels'].astype(numpy.int64)
-    # Change this?
-    train_labels = train_labels.reshape(train_labels.shape[0]) - 1
+  # # The labels for each image.
+  test_labels = numpy.zeros((418, 1)).reshape(418).astype(numpy.int64) # We don't have this.
+  print(train_data.shape, train_labels.shape, test_data.shape, test_labels.shape)
 
-    # The images given by pixel matrices (32 pixels by 32 pixels by 418 images).
-    test_data = public_test_images['public_test_images'].astype(numpy.float32)
-    # Scale to between [-0.5, 0,5]. 
-    test_data = (test_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
-    test_data = numpy.transpose(test_data, (2, 0, 1))
-    #test_data = test_data[:, :, :, None]
-    test_data = test_data.reshape(test_data.shape[0], 32, 32, 1)
+  # For testing.
+  plot.imshow(train_data[105,:,:,0], cmap=plot.cm.gray_r, interpolation='nearest')
+  plot.show()
+  ###########################################
 
-    # # The labels for each image.
-    test_labels = numpy.zeros((418, 1)).reshape(418).astype(numpy.int64) # We don't have this.
-    print(train_data.shape, train_labels.shape, test_data.shape, test_labels.shape)
+  # Generate a validation set.
+  validation_data = train_data[:VALIDATION_SIZE, ...]
+  validation_labels = train_labels[:VALIDATION_SIZE]
+  train_data = train_data[VALIDATION_SIZE:, ...]
+  train_labels = train_labels[VALIDATION_SIZE:]
+  num_epochs = NUM_EPOCHS
 
-    # train_data = numpy.transpose(labeled_images['tr_images'])
-    # train_labels = labeled_images['tr_labels']
-    # train_labels = train_labels.reshape((len(train_labels), ))
-    # train_labels = train_labels - numpy.ones((len(train_labels), ))
-    # test_data = numpy.transpose(public_test_images['public_test_images'])
-
-    # train_data = train_data.reshape(train_data.shape[0], 32, 32, 1)
-    # test_data = test_data.reshape(test_data.shape[0], 32, 32, 1)
-    # train_data = train_data.astype(numpy.float32)
-    # test_data = test_data.astype(numpy.float32)
-    # train_data = (train_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
-    # test_data = (test_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
-    # print(train_data.shape, train_labels.shape, test_data.shape)
-    plot.imshow(train_data[105,:,:,0], cmap=plot.cm.gray_r, interpolation='nearest')
-    plot.show()
-
-    # Generate a validation set.
-    validation_data = train_data[:VALIDATION_SIZE, ...]
-    validation_labels = train_labels[:VALIDATION_SIZE]
-    train_data = train_data[VALIDATION_SIZE:, ...]
-    train_labels = train_labels[VALIDATION_SIZE:]
-    num_epochs = NUM_EPOCHS
   train_size = train_labels.shape[0]
 
   # This is where training samples and labels are fed to the graph.
@@ -301,7 +214,7 @@ def main(argv=None):  # pylint: disable=unused-argument
   batch = tf.Variable(0)
   # Decay once per epoch, using an exponential schedule starting at 0.01.
   learning_rate = tf.train.exponential_decay(
-      0.01,                # Base learning rate.
+      0.001,               # Base learning rate.
       batch * BATCH_SIZE,  # Current index into the dataset.
       train_size,          # Decay step.
       0.95,                # Decay rate.
