@@ -6,14 +6,14 @@ np.random.seed(1337)
 from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
-from keras.layers.convolutional import Convolution2D, MaxPooling2D
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.utils import np_utils
 
 from util import *
 
-batch_size = 64
+batch_size = 32
 nb_classes = 7
-nb_epoch = 12
+nb_epoch = 15
 
 # input image dimensions
 img_rows, img_cols = 32, 32
@@ -50,8 +50,12 @@ Y_train = np_utils.to_categorical(y_train, nb_classes)
 
 model = Sequential()
 
+# add zero padding to keep size the same after first conv layer
+model.add(ZeroPadding2D(padding=(1, 1), input_shape=(1, img_rows, img_cols)))
 model.add(Convolution2D(nb_filters, nb_conv, nb_conv,
-    border_mode='valid', input_shape=(1, img_rows, img_cols)))
+    border_mode='valid'))
+model.add(Activation('relu'))
+model.add(Convolution2D(nb_filters + 32, nb_conv, nb_conv))
 model.add(Activation('relu'))
 model.add(Convolution2D(nb_filters, nb_conv, nb_conv))
 model.add(Activation('relu'))
