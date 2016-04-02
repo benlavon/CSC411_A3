@@ -1,5 +1,18 @@
 from __future__ import print_function
 import numpy as np
+import sys
+
+if len(sys.argv) != 4:
+    print(len(sys.argv))
+    raise ValueError("Need csv filename, model json filename, and model weights filename")
+
+csv_filename = sys.argv[1]
+json_filename = sys.argv[2]
+weights_filename = sys.argv[3]
+
+print('Saving predictions to: ', csv_filename)
+print('Saving model to: ', json_filename)
+print('Saving weights to: ', weights_filename)
 
 np.random.seed(1337)
 
@@ -73,10 +86,20 @@ model.compile(loss='categorical_crossentropy', optimizer='adadelta')
 model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
         show_accuracy=True, verbose=1)
 score = model.evaluate(X_train, Y_train, show_accuracy=True, verbose=0)
+
+# get predicted scores
 predicted = model.predict_classes(X_test, batch_size=batch_size, verbose=1)
 predicted = predicted + np.ones((len(predicted), ))
 predicted = np.asarray(predicted, dtype='int32')
-write_csv('predictions_cnn.csv', predicted)
+
+# write predictions to csv file
+write_csv(csv_filename, predicted)
+
+# save model to json file
+open(json_filename, 'w').write(model.to_json())
+
+# save weights to h5 file
+model.save_weights(weights_filename)
 
 print('Test score: ', score[0])
 print('Test accuracy: ', score[1])

@@ -44,3 +44,5 @@ def to_categorical(y, nb_classes):
         Y[i, y_[i] -1] = 1.
     return Y
 
+def print_usage():
+    print "Usage: python run_saved_model.py [model.json] [weights.h5] [output.csv]"
