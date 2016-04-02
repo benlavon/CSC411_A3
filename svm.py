@@ -4,16 +4,19 @@ import matplotlib.pyplot as plt
 
 from sklearn import svm, metrics
 
+# csv writer
+from util import *
+
 # hyperparameters
-GAMMA = 0.001
+GAMMA = 0.000001
 # kernel options: linear, poly, rbf, sigmoid, precomputed
 KERNEL = 'poly'
 # degree of the polynomial kernal function
-DEGREE = 3
+DEGREE = 2
 # tolerance
-TOL = 1e-5
+TOL = 1e-9
 # penalty parameter of error term
-C = 1.0
+C = 100.0
 
 training_data = scipy.io.loadmat('labeled_images.mat')
 testing_data  = scipy.io.loadmat('public_test_images.mat')
@@ -47,6 +50,10 @@ classifier.fit(data[:n_samples / 2], labels[:n_samples/2])
 expected = labels[n_samples/2:]
 predicted = classifier.predict(data[n_samples/2:])
 
+predicted2 = classifier.predict(test_data)
+# write to csv file
+write_csv('predictions_svm.csv', predicted2)
+
 print "Classification report for classifier %s:\n%s\n" % (classifier, metrics.classification_report(expected, predicted))
 
 images_and_predictions = list(zip(images[n_samples/2:], predicted))
@@ -55,5 +62,12 @@ for index, (image, prediction) in enumerate(images_and_predictions[:4]):
     plt.axis('off')
     plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
     plt.title('Prediction: %i' % prediction)
+
+#images_and_predictions2 = list(zip(test_images, predicted2))
+#for index, (image, prediction) in enumerate(images_and_predictions2[:4]):
+#    plt.subplot(2, 4, index + 5)
+#    plt.axis('off')
+#    plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
+#    plt.title('Prediction2: %i' % prediction)
 
 plt.show()
