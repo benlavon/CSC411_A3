@@ -48,16 +48,16 @@ PIXEL_DEPTH = 255
 #VALIDATION_SIZE = 5000  # Size of the validation set.
 SEED = 66478  # Set to None for random seed.
 #BATCH_SIZE = 64
-NUM_EPOCHS = 10
+NUM_EPOCHS = 24
 #EVAL_BATCH_SIZE = 64
-EVAL_FREQUENCY = 10 # Number of steps between evaluations.
+EVAL_FREQUENCY = 100 # Number of steps between evaluations.
 
 ############################
 # Modified params. for A3. #
 ############################
 IMAGE_SIZE = 32
 NUM_LABELS = 7
-VALIDATION_SIZE = 200
+VALIDATION_SIZE = 128
 BATCH_SIZE = 32
 EVAL_BATCH_SIZE = 32
 #NUM_EPOCHS = 5
@@ -140,16 +140,16 @@ def main(argv=None):  # pylint: disable=unused-argument
     num_epochs = 1
   else:
     # Get the data.
-    train_data_filename = maybe_download('train-images-idx3-ubyte.gz')
-    train_labels_filename = maybe_download('train-labels-idx1-ubyte.gz')
-    test_data_filename = maybe_download('t10k-images-idx3-ubyte.gz')
-    test_labels_filename = maybe_download('t10k-labels-idx1-ubyte.gz')
+    #train_data_filename = maybe_download('train-images-idx3-ubyte.gz')
+    #train_labels_filename = maybe_download('train-labels-idx1-ubyte.gz')
+    #test_data_filename = maybe_download('t10k-images-idx3-ubyte.gz')
+    #test_labels_filename = maybe_download('t10k-labels-idx1-ubyte.gz')
 
     # Extract it into numpy arrays.
-    train_data2 = extract_data(train_data_filename, 60000)
-    train_labels2 = extract_labels(train_labels_filename, 60000)
-    test_data2 = extract_data(test_data_filename, 10000)
-    test_labels2 = extract_labels(test_labels_filename, 10000)
+    #train_data2 = extract_data(train_data_filename, 60000)
+    #train_labels2 = extract_labels(train_labels_filename, 60000)
+    #test_data2 = extract_data(test_data_filename, 10000)
+    #test_labels2 = extract_labels(test_labels_filename, 10000)
 
     ###########################################
     # Get training data and test data for A3. #
@@ -157,43 +157,45 @@ def main(argv=None):  # pylint: disable=unused-argument
     labeled_images = sp.loadmat('labeled_images.mat')
     public_test_images = sp.loadmat('public_test_images.mat')
 
-    # # # The images given by pixel matrices (32 pixels by 32 pixels by 2925 images).
-    # train_data_ = numpy.transpose(labeled_images['tr_images'], (2, 0, 1))
-    # # plot.imshow(train_data_[57], cmap=plot.cm.gray_r, interpolation='nearest')
-    # # plot.show()
-    # train_data = train_data_[:, :, :, None].astype(numpy.float32)
-    # # plot.imshow(train_data[57,:,:,0], cmap=plot.cm.gray_r, interpolation='nearest')
-    # # plot.show()
-    # # # The labels for each image.
-    # train_labels = labeled_images['tr_labels'].reshape(2925).astype(numpy.int64)
-    # print(train_labels)
-    # train_labels = train_labels - numpy.ones((len(train_labels), ))
-    # print(train_labels)
-
-    # train_data /= 255
-
-    # # # The images given by pixel matrices (32 pixels by 32 pixels by 418 images).
-    # test_data = numpy.transpose(public_test_images['public_test_images'], (2, 0, 1))[:, :, :, None].astype(numpy.float32)
-    # test_data /= 255
-    # # The labels for each image.
-    # test_labels = numpy.zeros((418, 1)).reshape(418).astype(numpy.int64) # We don't have this.
-    # # print(train_data.shape, train_labels.shape, test_data.shape, test_labels.shape)
-    # #print(train_data, train_labels, test_data, test_labels)
-
-    train_data = numpy.transpose(labeled_images['tr_images'])
-    train_labels = labeled_images['tr_labels']
-    train_labels = train_labels.reshape((len(train_labels), ))
-    train_labels = train_labels - numpy.ones((len(train_labels), ))
-    test_data = numpy.transpose(public_test_images['public_test_images'])
-
+    # The images given by pixel matrices (32 pixels by 32 pixels by 2925 images).
+    train_data = labeled_images['tr_images'].astype(numpy.float32)
+    # Scale to between [-0.5, 0,5]. 
+    train_data = (train_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
+    train_data = numpy.transpose(train_data, (2, 0, 1))
+    #train_data = train_data[:, :, :, None]
     train_data = train_data.reshape(train_data.shape[0], 32, 32, 1)
+
+    # The labels for each image.
+    train_labels = labeled_images['tr_labels'].astype(numpy.int64)
+    # Change this?
+    train_labels = train_labels.reshape(train_labels.shape[0]) - 1
+
+    # The images given by pixel matrices (32 pixels by 32 pixels by 418 images).
+    test_data = public_test_images['public_test_images'].astype(numpy.float32)
+    # Scale to between [-0.5, 0,5]. 
+    test_data = (test_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
+    test_data = numpy.transpose(test_data, (2, 0, 1))
+    #test_data = test_data[:, :, :, None]
     test_data = test_data.reshape(test_data.shape[0], 32, 32, 1)
-    train_data = train_data.astype('float32')
-    test_data = test_data.astype('float32')
-    train_data /= 255
-    test_data /= 255
-    print(train_data.shape, train_labels.shape, test_data.shape)
-    plot.imshow(train_data[57,:,:,0], cmap=plot.cm.gray_r, interpolation='nearest')
+
+    # # The labels for each image.
+    test_labels = numpy.zeros((418, 1)).reshape(418).astype(numpy.int64) # We don't have this.
+    print(train_data.shape, train_labels.shape, test_data.shape, test_labels.shape)
+
+    # train_data = numpy.transpose(labeled_images['tr_images'])
+    # train_labels = labeled_images['tr_labels']
+    # train_labels = train_labels.reshape((len(train_labels), ))
+    # train_labels = train_labels - numpy.ones((len(train_labels), ))
+    # test_data = numpy.transpose(public_test_images['public_test_images'])
+
+    # train_data = train_data.reshape(train_data.shape[0], 32, 32, 1)
+    # test_data = test_data.reshape(test_data.shape[0], 32, 32, 1)
+    # train_data = train_data.astype(numpy.float32)
+    # test_data = test_data.astype(numpy.float32)
+    # train_data = (train_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
+    # test_data = (test_data - (PIXEL_DEPTH / 2.0)) / PIXEL_DEPTH
+    # print(train_data.shape, train_labels.shape, test_data.shape)
+    plot.imshow(train_data[105,:,:,0], cmap=plot.cm.gray_r, interpolation='nearest')
     plot.show()
 
     # Generate a validation set.
