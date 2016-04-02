@@ -11,7 +11,7 @@ from keras.utils import np_utils
 
 from util import *
 
-batch_size = 128
+batch_size = 64
 nb_classes = 7
 nb_epoch = 12
 
@@ -45,7 +45,7 @@ print(X_train.shape[0], 'train samples')
 print(X_test.shape[0], 'test samples')
 
 # convert class vectors to binary class matrices
-Y_train = to_categorical(y_train, nb_classes)
+Y_train = np_utils.to_categorical(y_train, nb_classes)
 # Y_test = np_utils.to_categorical(y_test, nb_classes)
 
 model = Sequential()
