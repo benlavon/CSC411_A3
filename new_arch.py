@@ -22,7 +22,7 @@ from keras.utils import np_utils
 
 from util import *
 
-batch_size = 32
+batch_size = 16
 nb_classes = 7
 nb_epoch = 15
 
@@ -77,17 +77,13 @@ model.add(Convolution2D(nb_filters, nb_conv, nb_conv,
 model.add(Activation('relu'))
 
 # second conv layer
-model.add(Convolution2D(high_filters, nb_conv, nb_conv))
+model.add(Convolution2D(nb_filters, nb_conv, nb_conv))
 model.add(Activation('relu'))
 
 # max pool layer
 model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
 
-# third conv
-model.add(Convolution2D(high_filters, nb_conv, nb_conv))
-model.add(Activation('relu'))
-
-# 4th conv
+# 3rd conv
 model.add(Convolution2D(nb_filters, nb_conv - 1, nb_conv - 1))
 model.add(Activation('relu'))
 

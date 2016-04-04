@@ -1,4 +1,5 @@
 from keras.models import model_from_json
+from keras.utils import np_utils
 from util import *
 import sys
 
@@ -8,12 +9,26 @@ if len(sys.argv) != 4:
 
 json_filename = sys.argv[1]
 h5_filename = sys.argv[2]
+csv_filename = sys.argv[3]
 
 model = model_from_json(open(json_filename).read())
 model.load_weights(h5_filename)
 
 # get training and test data
 train, test = load_data()
+
+# number of classes
+nb_classes = 7
+# batch size
+batch_size = 32
+# input image dimensions
+img_rows, img_cols = 32, 32
+# number of conv filters
+nb_filters = 32
+# size of pooling
+nb_pool = 2
+# conv kernel size
+nb_conv = 3
 
 X_train = np.transpose(train['tr_images'])
 y_train = train['tr_labels']
