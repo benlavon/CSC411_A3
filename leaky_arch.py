@@ -18,6 +18,7 @@ np.random.seed(1337)
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+from keras.layers.advanced_activations import LeakyReLU as LRU
 from keras.utils import np_utils
 
 from util import *
@@ -77,14 +78,14 @@ model.add(ZeroPadding2D(padding=(1, 1), input_shape=(1, img_rows, img_cols)))
 # first conv layer
 model.add(Convolution2D(nb_filters, nb_conv, nb_conv,
     border_mode='valid'))
-model.add(Activation('relu'))
+model.add(LRU())
 
 # padding
 model.add(ZeroPadding2D(padding=(1, 1)))
 
 # second conv layer
 model.add(Convolution2D(high_filters, nb_conv, nb_conv))
-model.add(Activation('relu'))
+model.add(LRU())
 
 # more padding
 model.add(ZeroPadding2D(padding=(1, 1)))
@@ -96,7 +97,7 @@ model.add(ZeroPadding2D(padding=(1, 1)))
 
 # 3rd conv
 model.add(Convolution2D(extra_high_filters, nb_conv, nb_conv))
-model.add(Activation('relu'))
+model.add(LRU())
 
 # max pooling
 model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
