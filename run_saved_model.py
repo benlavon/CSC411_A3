@@ -15,7 +15,8 @@ model = model_from_json(open(json_filename).read())
 model.load_weights(h5_filename)
 
 # get training and test data
-train, test = load_data()
+test = load_hidden()
+training, public_test = load_data()
 
 # number of classes
 nb_classes = 7
@@ -30,32 +31,24 @@ nb_pool = 2
 # conv kernel size
 nb_conv = 3
 
-X_train = np.transpose(train['tr_images'])
-y_train = train['tr_labels']
-y_train = y_train.reshape((len(y_train), ))
-y_train = y_train - np.ones((len(y_train), ))
-X_test = np.transpose(test['public_test_images'])
+X_test = np.transpose(test['hidden_test_images'])
+X_public = np.transpose(public_test['public_test_images'])
 
-X_train = X_train.reshape(X_train.shape[0], 1, img_rows, img_cols)
 X_test = X_test.reshape(X_test.shape[0], 1, img_rows, img_cols)
-X_train = X_train.astype('float32')
+X_public = X_public.reshape(X_public.shape[0], 1, img_rows, img_cols)
 X_test = X_test.astype('float32')
-X_train /= 255
+X_public = X_public.astype('float32')
 X_test /= 255
-print('X_train shape:', X_train.shape)
-print(X_train.shape[0], 'train samples')
-print(X_test.shape[0], 'test samples')
-
-# convert class vectors to binary class matrices
-Y_train = np_utils.to_categorical(y_train, nb_classes)
-
-# get score on the training set
-score = model.evaluate(X_train, Y_train, show_accuracy=True, verbose=0)
+X_public /= 255
+X_all = np.concatenate((X_public, X_test))
+print(X_public.shape[0], 'public test samples')
+print(X_test.shape[0], 'hidden test samples')
+print(X_all.shape[0], 'total images')
 
 # get predicted scores on the test set
-predicted = model.predict_classes(X_test, batch_size=batch_size, verbose=1)
+predicted = model.predict_classes(X_all, batch_size=batch_size, verbose=1)
 predicted = predicted + np.ones((len(predicted), ))
 predicted = np.asarray(predicted, dtype='int32')
 
 # write predictions to csv file
-write_csv(csv_filename, predicted)
+write_csv_proper(csv_filename, predicted)

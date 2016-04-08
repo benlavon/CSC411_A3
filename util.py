@@ -25,6 +25,19 @@ def write_csv(filename, predictions):
             f.write('\n')
             lines_so_far += 1
 
+def write_csv_proper(filename, predictions):
+    """
+    Write the given predictions to a csv file.
+    :param filename: the name of the csv file
+    :param predictions: the predictions to write
+    """
+    with open(filename, 'w') as f:
+        f.write('Id,Prediction\n')
+        for index, prediction in enumerate(predictions):
+            f.write(str(index + 1))
+            f.write(',')
+            f.write(str(prediction))
+            f.write('\n')
 
 def load_data():
     """
@@ -36,6 +49,11 @@ def load_data():
     testing_data  = scipy.io.loadmat('public_test_images.mat')
 
     return training_data, testing_data
+
+def load_hidden():
+    testing_data = scipy.io.loadmat('hidden_test_images.mat')
+
+    return testing_data
 
 def to_categorical(y, nb_classes):
     y_ = np.asarray(y, dtype='int32')
