@@ -1,5 +1,6 @@
 # CSC411 Assignment 3 README
 Authors: Benjamin Lavon and Makram Kamaleddine
+
 Kaggle: benlavon and makram (team name: monty_python)
 
 # Files Submitted:
