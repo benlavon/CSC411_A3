@@ -28,3 +28,7 @@ We used the following libraries and code:
 - Used the following file as a basis for Keras files: https://github.com/fchollet/keras/blob/master/examples/mnist_cnn.py
 - Used the following page as a basis for `svm.py`: http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC
 
+# References to papers used:
+- Paper by Hinton et al. explaining dropout: https://www.cs.toronto.edu/~hinton/absps/JMLRdropout.pdf
+- Paper by Krizhevsky et al. presenting AlexNet: http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf
+- Paper by LeCun presenting LeNet and other findings: http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf
