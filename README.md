@@ -23,3 +23,5 @@ weights.
 We used the following libraries:
 - TensorFlow (https://www.tensorflow.org/).
 - Keras (http://keras.io/). 
+- LeNet 5 code found in convolutional.py (https://tensorflow.googlesource.com/tensorflow/+/master/tensorflow/models/image/mnist/convolutional.py).
+
