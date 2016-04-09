@@ -24,4 +24,5 @@ We used the following libraries and code:
 - TensorFlow (https://www.tensorflow.org/).
 - Keras (http://keras.io/). 
 - Modified LeNet 5 code found in convolutional.py (https://tensorflow.googlesource.com/tensorflow/+/master/tensorflow/models/image/mnist/convolutional.py).
+- Used the following file as a basis for Keras files: https://github.com/fchollet/keras/blob/master/examples/mnist_cnn.py
 
