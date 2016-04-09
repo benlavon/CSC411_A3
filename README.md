@@ -20,8 +20,8 @@ weights.
 (public and private)
 
 # References 
-We used the following libraries:
+We used the following libraries and code:
 - TensorFlow (https://www.tensorflow.org/).
 - Keras (http://keras.io/). 
-- LeNet 5 code found in convolutional.py (https://tensorflow.googlesource.com/tensorflow/+/master/tensorflow/models/image/mnist/convolutional.py).
+- Modified LeNet 5 code found in convolutional.py (https://tensorflow.googlesource.com/tensorflow/+/master/tensorflow/models/image/mnist/convolutional.py).
 
